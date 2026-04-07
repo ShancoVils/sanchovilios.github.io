@@ -1,3 +1,24 @@
+document.addEventListener('DOMContentLoaded', () => {
+    // Проверяем, доступен ли объект WebApp
+    if (window.WebApp) {
+        console.log('MAX Bridge загружен, версия платформы:', window.WebApp.version);
+        console.log('Платформа пользователя:', window.WebApp.platform);
+
+        // Сообщаем платформе, что приложение готово
+        window.WebApp.ready();
+        
+        // Получаем данные о пользователе (НЕ используйте для валидации на сервере!)
+        if (window.WebApp.initDataUnsafe && window.WebApp.initDataUnsafe.user) {
+            const user = window.WebApp.initDataUnsafe.user;
+            console.log(`Привет, ${user.first_name} ${user.last_name || ''}! Ваш ID: ${user.id}`);
+        }
+    } else {
+        console.warn('MAX Bridge не загружен. Приложение работает вне среды MAX.');
+        // Здесь можно добавить fallback-логику для обычного браузера
+    }
+});
+
+
 (function(){
         // ---- состояние приложения ----
         let counter = 0;                // текущее значение счетчика
@@ -14,8 +35,6 @@
         const lastMessageSpan = document.getElementById('lastMessage');
         const statusBadge = document.getElementById('statusBadge');
 
-        let miniapp = window.WebApp
-        console.log(miniapp.initData)
         
         // вспомогательная функция: обновить отображение счетчика и статус-бейдж
         function updateCounterUI() {
