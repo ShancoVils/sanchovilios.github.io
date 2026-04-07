@@ -1,0 +1,220 @@
+* {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(145deg, #f0f4fa 0%, #d9e0e8 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        /* Карточка приложения */
+        .app-card {
+            max-width: 480px;
+            width: 100%;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(2px);
+            border-radius: 56px;
+            box-shadow: 0 25px 45px -12px rgba(0,0,0,0.35), 0 1px 2px rgba(0,0,0,0.05);
+            overflow: hidden;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        /* Шапка */
+        .app-header {
+            background: #ffffffcc;
+            padding: 24px 24px 16px 24px;
+            border-bottom: 1px solid #eef2f6;
+            text-align: center;
+        }
+
+        .app-header h1 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e2b3c, #2c4c6e);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+        }
+
+        .app-header p {
+            font-size: 0.9rem;
+            color: #5b6f82;
+            margin-top: 8px;
+        }
+
+        /* Основной контент */
+        .app-content {
+            padding: 28px 24px 32px;
+        }
+
+        /* Счетчик */
+        .counter-section {
+            background: #f8fafd;
+            border-radius: 48px;
+            padding: 20px 20px;
+            text-align: center;
+            margin-bottom: 32px;
+            box-shadow: inset 0 1px 3px #0001, 0 6px 12px -8px rgba(0,0,0,0.1);
+        }
+
+        .counter-value {
+            font-size: 4.4rem;
+            font-weight: 800;
+            line-height: 1;
+            color: #1f4e6e;
+            font-feature-settings: "tnum";
+            letter-spacing: 2px;
+            transition: transform 0.1s ease;
+        }
+
+        .counter-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            color: #6f8eaa;
+            margin-top: 8px;
+        }
+
+        /* Кнопки управления */
+        .button-group {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: none;
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 60px;
+            background: white;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: inherit;
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .btn-primary {
+            background: #22668d;
+            color: white;
+            box-shadow: 0 8px 18px -6px #22668d70;
+        }
+
+        .btn-primary:active {
+            background: #184f6e;
+        }
+
+        .btn-secondary {
+            background: #eef2f9;
+            color: #2c4a6e;
+        }
+
+        .btn-warning {
+            background: #ffe9e6;
+            color: #c44536;
+        }
+
+        /* Панель сообщений и действий */
+        .message-panel {
+            background: #ffffffc9;
+            border-radius: 32px;
+            padding: 16px 20px;
+            margin-top: 16px;
+            border: 1px solid #ffffffba;
+            backdrop-filter: blur(4px);
+        }
+
+        .status-text {
+            font-size: 0.9rem;
+            color: #1f3b4c;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .status-badge {
+            background: #cae3f2;
+            border-radius: 60px;
+            padding: 4px 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #1f5882;
+        }
+
+        .action-row {
+            display: flex;
+            gap: 12px;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .small-btn {
+            background: #eef2fa;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.1s;
+            flex: 1;
+            text-align: center;
+            color: #2e577a;
+        }
+
+        .small-btn:active {
+            background: #dce3ed;
+            transform: scale(0.97);
+        }
+
+        /* нижний колонтитул */
+        .app-footer {
+            background: #f1f5f9d9;
+            padding: 16px 24px;
+            text-align: center;
+            font-size: 0.7rem;
+            color: #6c86a0;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        /* эффекты для интерактива */
+        .click-effect {
+            transition: all 0.05s linear;
+        }
+
+        @media (max-width: 500px) {
+            .app-content {
+                padding: 20px 18px 28px;
+            }
+            .counter-value {
+                font-size: 3.5rem;
+            }
+            .btn {
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
+        }

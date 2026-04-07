@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Мини-приложение | Тест</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-card" id="miniAppRoot">
+    <div class="app-header">
+        <h1>✨ ТестМиниApp</h1>
+        <p>простое тестовое мини-приложение</p>
+    </div>
+    <div class="app-content">
+        <!-- счетчик -->
+        <div class="counter-section">
+            <div class="counter-value" id="counterDisplay">0</div>
+            <div class="counter-label">значение счетчика</div>
+        </div>
+
+        <!-- основные кнопки -->
+        <div class="button-group">
+            <button class="btn btn-primary" id="incrementBtn">➕ +1</button>
+            <button class="btn btn-secondary" id="decrementBtn">➖ –1</button>
+            <button class="btn btn-warning" id="resetBtn">🔄 Сброс</button>
+        </div>
+
+        <!-- панель сообщений и дополнительных действий -->
+        <div class="message-panel">
+            <div class="status-text">
+                <span>📌 Состояние:</span>
+                <span class="status-badge" id="statusBadge">Активно</span>
+            </div>
+            <div class="action-row">
+                <button class="small-btn" id="greetBtn">👋 Приветствие</button>
+                <button class="small-btn" id="randomBtn">🎲 Случайное число</button>
+                <button class="small-btn" id="clearMsgBtn">🗑️ Очистить лог</button>
+            </div>
+            <div id="messageArea" style="margin-top: 18px; font-size: 0.85rem; color: #2c5a7a; border-top: 1px dashed #cbdde9; padding-top: 12px;">
+                <span id="lastMessage">💡 Нажмите на кнопки, чтобы проверить логику</span>
+            </div>
+        </div>
+    </div>
+    <div class="app-footer">
+        🧪 Тестовое окружение · Мини-аппа для проверки интерфейса
+    </div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>
