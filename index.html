@@ -117,6 +117,29 @@
             </div>
             <div class="info-text">При закрытии приложения будет запрошено подтверждение</div>
         </div>
+        
+        <!-- Секция биометрии -->
+        <div class="section">
+            <h2>🔐 Биометрическая аутентификация (BiometricManager)</h2>
+            <div class="info-grid" id="biometricStatus">
+                <div class="info-item">Проверка поддержки биометрии...</div>
+            </div>
+            <div class="button-group">
+                <button class="btn btn-primary" id="biometricInitBtn">Инициализировать биометрию</button>
+                <button class="btn btn-primary" id="biometricAuthBtn">Аутентификация</button>
+                <button class="btn btn-primary" id="biometricRequestAccessBtn">Запросить доступ</button>
+                <button class="btn btn-warning" id="biometricUpdateTokenBtn">Обновить токен</button>
+                <button class="btn btn-danger" id="biometricOpenSettingsBtn">Открыть настройки</button>
+            </div>
+            <div class="input-group">
+                <input type="text" id="biometricTokenValue" placeholder="Токен для сохранения" value="my_secure_token_123">
+            </div>
+            <div class="info-text" id="biometricResult"></div>
+            <div class="info-text" style="background: #fff3cd; color: #856404;">
+                ⚠️ Важно: BiometricManager работает ТОЛЬКО в нативном приложении MAX, не в веб-версии.<br>
+                Для Android всегда возвращает biometricType = ["unknown"]
+            </div>
+        </div>
 
         <!-- Секция хранилища -->
         <div class="section">
