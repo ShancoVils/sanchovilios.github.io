@@ -3,50 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Мини-приложение | Тест</title>
+    <title>MAX Bridge Demo | Мини-приложение</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Подключаем библиотеку MAX Bridge -->
     <script src="https://st.max.ru/js/max-web-app.js"></script>
 </head>
 <body>
-<div class="app-card" id="miniAppRoot">
-    <div class="app-header">
-        <h1>✨ ТестМиниApp</h1>
-        <p>простое тестовое мини-приложение</p>
-    </div>
-    <div class="app-content">
-        <!-- счетчик -->
-        <div class="counter-section">
-            <div class="counter-value" id="counterDisplay">0</div>
-            <div class="counter-label">значение счетчика</div>
+    <div class="app-container">
+        <!-- Шапка приложения -->
+        <div class="app-header">
+            <h1>🚀 MAX Bridge Demo</h1>
+            <p>Демонстрация всех возможностей библиотеки</p>
+            <div class="status-badge" id="bridgeStatus">Проверка подключения...</div>
         </div>
 
-        <!-- основные кнопки -->
-        <div class="button-group">
-            <button class="btn btn-primary" id="incrementBtn">➕ +1</button>
-            <button class="btn btn-secondary" id="decrementBtn">➖ –1</button>
-            <button class="btn btn-warning" id="resetBtn">🔄 Сброс</button>
+        <!-- Секция информации о пользователе -->
+        <div class="section">
+            <h2>📱 Информация о пользователе</h2>
+            <div class="info-grid" id="userInfo">
+                <div class="info-item">Загрузка данных...</div>
+            </div>
         </div>
 
-        <!-- панель сообщений и дополнительных действий -->
-        <div class="message-panel">
-            <div class="status-text">
-                <span>📌 Состояние:</span>
-                <span class="status-badge" id="statusBadge">Активно</span>
-            </div>
-            <div class="action-row">
-                <button class="small-btn" id="greetBtn">👋 Приветствие</button>
-                <button class="small-btn" id="randomBtn">🎲 Случайное число</button>
-                <button class="small-btn" id="clearMsgBtn">🗑️ Очистить лог</button>
-            </div>
-            <div id="messageArea" style="margin-top: 18px; font-size: 0.85rem; color: #2c5a7a; border-top: 1px dashed #cbdde9; padding-top: 12px;">
-                <span id="lastMessage">💡 Нажмите на кнопки, чтобы проверить логику</span>
+        <!-- Секция кнопки "Назад" -->
+        <div class="section">
+            <h2>⬅️ Управление кнопкой "Назад"</h2>
+            <div class="button-group">
+                <button class="btn btn-primary" id="showBackBtn">Показать кнопку "Назад"</button>
+                <button class="btn btn-secondary" id="hideBackBtn">Скрыть кнопку "Назад"</button>
             </div>
         </div>
+
+        <!-- Секция навигации -->
+        <div class="section">
+            <h2>🔗 Навигация и ссылки</h2>
+            <div class="button-group">
+                <button class="btn btn-primary" id="openLinkBtn">Открыть внешнюю ссылку</button>
+                <button class="btn btn-primary" id="openMaxLinkBtn">Открыть ссылку MAX</button>
+                <button class="btn btn-warning" id="closeAppBtn">Закрыть приложение</button>
+            </div>
+        </div>
+
+        <!-- Секция шеринга -->
+        <div class="section">
+            <h2>📤 Шеринг</h2>
+            <div class="button-group">
+                <button class="btn btn-primary" id="shareContentBtn">Поделиться (нативный)</button>
+                <button class="btn btn-primary" id="shareMaxBtn">Поделиться в MAX</button>
+            </div>
+            <div class="input-group">
+                <input type="text" id="shareText" placeholder="Текст для шеринга" value="Привет! Посмотри это приложение">
+                <input type="text" id="shareLink" placeholder="Ссылка" value="https://max.ru">
+            </div>
+        </div>
+
+        <!-- Секция тактильной обратной связи -->
+        <div class="section">
+            <h2>📳 Тактильная обратная связь (Haptic)</h2>
+            <div class="button-group">
+                <button class="btn btn-secondary" id="hapticSoft">Soft</button>
+                <button class="btn btn-secondary" id="hapticLight">Light</button>
+                <button class="btn btn-secondary" id="hapticMedium">Medium</button>
+                <button class="btn btn-secondary" id="hapticHeavy">Heavy</button>
+                <button class="btn btn-secondary" id="hapticRigid">Rigid</button>
+            </div>
+            <div class="button-group">
+                <button class="btn btn-success" id="hapticSuccess">Успех ✅</button>
+                <button class="btn btn-warning" id="hapticWarning">Внимание ⚠️</button>
+                <button class="btn btn-danger" id="hapticError">Ошибка ❌</button>
+                <button class="btn btn-secondary" id="hapticSelection">Выбор изменён</button>
+            </div>
+        </div>
+
+        <!-- Секция работы с устройством -->
+        <div class="section">
+            <h2>💻 Функции устройства</h2>
+            <div class="button-group">
+                <button class="btn btn-primary" id="requestPhoneBtn">Запросить номер телефона</button>
+                <button class="btn btn-primary" id="scanQrBtn">Сканировать QR-код</button>
+                <button class="btn btn-primary" id="downloadFileBtn">Скачать файл</button>
+            </div>
+            <div class="input-group">
+                <input type="text" id="downloadUrl" placeholder="URL файла для скачивания" value="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf">
+                <input type="text" id="downloadName" placeholder="Имя файла" value="document.pdf">
+            </div>
+        </div>
+
+        <!-- Секция яркости экрана -->
+        <div class="section">
+            <h2>☀️ Управление яркостью</h2>
+            <div class="button-group">
+                <button class="btn btn-primary" id="maxBrightnessBtn">Максимальная яркость (30 сек)</button>
+                <button class="btn btn-secondary" id="restoreBrightnessBtn">Восстановить яркость</button>
+            </div>
+        </div>
+
+        <!-- Секция защиты экрана -->
+        <div class="section">
+            <h2>🔒 Защита экрана (скриншоты)</h2>
+            <div class="button-group">
+                <button class="btn btn-warning" id="enableScreenCaptureBtn">Запретить скриншоты/запись</button>
+                <button class="btn btn-secondary" id="disableScreenCaptureBtn">Разрешить скриншоты/запись</button>
+            </div>
+            <div class="info-text" id="screenCaptureStatus">Статус: не проверено</div>
+        </div>
+
+        <!-- Секция подтверждения закрытия -->
+        <div class="section">
+            <h2>⚠️ Подтверждение закрытия</h2>
+            <div class="button-group">
+                <button class="btn btn-warning" id="enableConfirmBtn">Включить подтверждение</button>
+                <button class="btn btn-secondary" id="disableConfirmBtn">Выключить подтверждение</button>
+            </div>
+            <div class="info-text">При закрытии приложения будет запрошено подтверждение</div>
+        </div>
+
+        <!-- Секция хранилища -->
+        <div class="section">
+            <h2>💾 DeviceStorage (только в приложении)</h2>
+            <div class="button-group">
+                <button class="btn btn-secondary" id="storageSetBtn">Сохранить данные</button>
+                <button class="btn btn-secondary" id="storageGetBtn">Получить данные</button>
+                <button class="btn btn-secondary" id="storageRemoveBtn">Удалить данные</button>
+                <button class="btn btn-secondary" id="storageClearBtn">Очистить всё</button>
+            </div>
+            <div class="input-group">
+                <input type="text" id="storageKey" placeholder="Ключ" value="testKey">
+                <input type="text" id="storageValue" placeholder="Значение" value="Hello MAX!">
+            </div>
+            <div class="info-text" id="storageResult"></div>
+        </div>
+
+        <!-- Секция событий и логов -->
+        <div class="section">
+            <h2>📋 Лог событий</h2>
+            <div class="log-container" id="logContainer">
+                <div class="log-entry">Ожидание действий...</div>
+            </div>
+            <button class="btn btn-secondary" id="clearLogBtn">Очистить лог</button>
+        </div>
+
+        <!-- Футер -->
+        <div class="app-footer">
+            <span id="versionInfo">MAX Bridge Demo</span>
+        </div>
     </div>
-    <div class="app-footer">
-        🧪 Тестовое окружение · Мини-аппа для проверки интерфейса
-    </div>
-</div>
-<script src="script.js"></script>
+
+    <script src="script.js"></script>
 </body>
 </html>

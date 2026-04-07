@@ -1,310 +1,347 @@
+// Ждем полной загрузки DOM
 document.addEventListener('DOMContentLoaded', () => {
-    // Проверяем, доступен ли объект WebApp
-    if (window.WebApp) {
-        console.log('MAX Bridge загружен, версия платформы:', window.WebApp.version);
-        console.log('Платформа пользователя:', window.WebApp.platform);
-
-        // Сообщаем платформе, что приложение готово
-        window.WebApp.ready();
+    console.log('%c=== MAX Bridge Demo App Started ===', 'color: #667eea; font-size: 16px; font-weight: bold');
+    
+    // Проверяем доступность WebApp
+    let webAppAvailable = false;
+    
+    function logToConsole(message, type = 'info') {
+        const timestamp = new Date().toLocaleTimeString();
+        const styles = {
+            info: 'color: #4ec9b0',
+            warning: 'color: #ce9178',
+            error: 'color: #f48771',
+            success: 'color: #6a9955'
+        };
+        console.log(`%c[${timestamp}] ${message}`, styles[type] || styles.info);
+    }
+    
+    function addToLog(message, type = 'info') {
+        const logContainer = document.getElementById('logContainer');
+        const timestamp = new Date().toLocaleTimeString();
+        const logEntry = document.createElement('div');
+        logEntry.className = 'log-entry';
+        logEntry.innerHTML = `<span class="log-time">[${timestamp}]</span> <span class="log-${type}">${message}</span>`;
+        logContainer.insertBefore(logEntry, logContainer.firstChild);
         
-        // Получаем данные о пользователе (НЕ используйте для валидации на сервере!)
-        if (window.WebApp.initDataUnsafe && window.WebApp.initDataUnsafe.user) {
-            const user = window.WebApp.initDataUnsafe.user;
-            console.log(`Привет, ${user.first_name} ${user.last_name || ''}! Ваш ID: ${user.id}`);
+        // Ограничиваем количество записей
+        while (logContainer.children.length > 50) {
+            logContainer.removeChild(logContainer.lastChild);
         }
-    } else {
-        console.warn('MAX Bridge не загружен. Приложение работает вне среды MAX.');
-        // Здесь можно добавить fallback-логику для обычного браузера
+    }
+    
+    function updateBridgeStatus(available) {
+        const statusEl = document.getElementById('bridgeStatus');
+        if (available) {
+            statusEl.textContent = '✅ MAX Bridge подключен';
+            statusEl.style.background = 'rgba(72, 187, 120, 0.3)';
+            addToLog('MAX Bridge успешно инициализирован', 'success');
+            logToConsole('MAX Bridge успешно инициализирован', 'success');
+        } else {
+            statusEl.textContent = '⚠️ MAX Bridge НЕ ДОСТУПЕН (работа вне MAX)';
+            statusEl.style.background = 'rgba(237, 137, 54, 0.3)';
+            addToLog('ВНИМАНИЕ: MAX Bridge не доступен. Некоторые функции могут не работать', 'warning');
+            logToConsole('MAX Bridge не доступен. Приложение работает вне среды MAX', 'warning');
+        }
+    }
+    
+    // Функция безопасного вызова методов WebApp
+    async function callWebAppMethod(methodName, ...args) {
+        if (!window.WebApp || !window.WebApp[methodName]) {
+            const msg = `Метод ${methodName} недоступен (WebApp отсутствует или метод не существует)`;
+            addToLog(msg, 'error');
+            logToConsole(msg, 'error');
+            return null;
+        }
+        
+        try {
+            logToConsole(`Вызов ${methodName} с аргументами:`, 'info');
+            console.log(args);
+            const result = await window.WebApp[methodName](...args);
+            logToConsole(`Результат ${methodName}:`, 'success');
+            console.log(result);
+            addToLog(`✅ ${methodName} выполнен успешно`, 'success');
+            return result;
+        } catch (error) {
+            const errorMsg = `Ошибка в ${methodName}: ${error.message || error}`;
+            addToLog(`❌ ${errorMsg}`, 'error');
+            logToConsole(errorMsg, 'error');
+            console.error(error);
+            return null;
+        }
+    }
+    
+    // Отображение информации о пользователе
+    function displayUserInfo() {
+        if (!window.WebApp || !window.WebApp.initDataUnsafe) {
+            document.getElementById('userInfo').innerHTML = '<div class="info-item">Данные пользователя недоступны (вне MAX)</div>';
+            addToLog('Данные пользователя не доступны', 'warning');
+            return;
+        }
+        
+        const data = window.WebApp.initDataUnsafe;
+        const user = data.user || {};
+        const chat = data.chat || {};
+        
+        const infoHtml = `
+            <div class="info-item"><strong>🆔 User ID:</strong> ${user.id || 'N/A'}</div>
+            <div class="info-item"><strong>👤 Имя:</strong> ${user.first_name || 'N/A'} ${user.last_name || ''}</div>
+            <div class="info-item"><strong>📛 Username:</strong> ${user.username || 'N/A'}</div>
+            <div class="info-item"><strong>🌐 Язык:</strong> ${user.language_code || 'N/A'}</div>
+            <div class="info-item"><strong>📱 Платформа:</strong> ${window.WebApp.platform || 'N/A'}</div>
+            <div class="info-item"><strong>🔢 Версия MAX:</strong> ${window.WebApp.version || 'N/A'}</div>
+            <div class="info-item"><strong>💬 Chat ID:</strong> ${chat.id || 'N/A'}</div>
+            <div class="info-item"><strong>📝 Тип чата:</strong> ${chat.type || 'N/A'}</div>
+            <div class="info-item"><strong>🔑 Query ID:</strong> ${data.query_id || 'N/A'}</div>
+        `;
+        document.getElementById('userInfo').innerHTML = infoHtml;
+        addToLog('Информация о пользователе загружена', 'success');
+        logToConsole('Информация о пользователе:', 'info');
+        console.log('User Data:', user);
+        console.log('Full initDataUnsafe:', data);
+    }
+    
+    // Инициализация Bridge и обработчиков событий
+    function initBridge() {
+        if (window.WebApp) {
+            webAppAvailable = true;
+            updateBridgeStatus(true);
+            
+            // Сообщаем о готовности приложения
+            window.WebApp.ready();
+            addToLog('Отправлено событие ready()', 'success');
+            logToConsole('Вызван метод ready() - приложение готово к работе', 'success');
+            
+            // Отображаем информацию о пользователе
+            displayUserInfo();
+            
+            // Подписываемся на события через onEvent
+            if (window.WebApp.onEvent) {
+                logToConsole('Настройка обработчиков событий...', 'info');
+                
+                // Пример подписки на событие нажатия кнопки "Назад"
+                window.WebApp.onEvent('backButtonClicked', () => {
+                    addToLog('Событие: нажата кнопка "Назад"', 'info');
+                    logToConsole('Событие: backButtonClicked', 'info');
+                });
+                
+                addToLog('Обработчики событий настроены', 'success');
+            }
+            
+            // Отображаем версию в футере
+            document.getElementById('versionInfo').innerHTML = `MAX Bridge v${window.WebApp.version || 'unknown'} | Платформа: ${window.WebApp.platform || 'unknown'}`;
+        } else {
+            webAppAvailable = false;
+            updateBridgeStatus(false);
+            document.getElementById('userInfo').innerHTML = '<div class="info-item">⚠️ MAX Bridge не обнаружен. Приложение запущено вне MAX.</div>';
+            document.getElementById('versionInfo').innerHTML = 'MAX Bridge Demo (оффлайн режим)';
+        }
+    }
+    
+    // --- Обработчики кнопок ---
+    
+    // 1. Кнопка "Назад"
+    document.getElementById('showBackBtn')?.addEventListener('click', () => {
+        if (window.WebApp?.BackButton) {
+            window.WebApp.BackButton.show();
+            window.WebApp.BackButton.onClick(() => {
+                addToLog('Нажата системная кнопка "Назад"', 'info');
+                logToConsole('Пользователь нажал кнопку "Назад"', 'info');
+            });
+            addToLog('Кнопка "Назад" показана', 'success');
+        } else {
+            addToLog('BackButton недоступен', 'error');
+        }
+    });
+    
+    document.getElementById('hideBackBtn')?.addEventListener('click', () => {
+        if (window.WebApp?.BackButton) {
+            window.WebApp.BackButton.hide();
+            addToLog('Кнопка "Назад" скрыта', 'success');
+        }
+    });
+    
+    // 2. Навигация
+    document.getElementById('openLinkBtn')?.addEventListener('click', () => {
+        const url = 'https://www.google.com';
+        callWebAppMethod('openLink', url);
+    });
+    
+    document.getElementById('openMaxLinkBtn')?.addEventListener('click', () => {
+        const url = 'https://max.ru';
+        callWebAppMethod('openMaxLink', url);
+    });
+    
+    document.getElementById('closeAppBtn')?.addEventListener('click', () => {
+        addToLog('Закрытие приложения...', 'warning');
+        callWebAppMethod('close');
+    });
+    
+    // 3. Шеринг
+    document.getElementById('shareContentBtn')?.addEventListener('click', () => {
+        const text = document.getElementById('shareText').value;
+        const link = document.getElementById('shareLink').value;
+        callWebAppMethod('shareContent', text, link);
+    });
+    
+    document.getElementById('shareMaxBtn')?.addEventListener('click', () => {
+        const text = document.getElementById('shareText').value;
+        const link = document.getElementById('shareLink').value;
+        callWebAppMethod('shareMaxContent', { text, link });
+    });
+    
+    // 4. Haptic Feedback
+    const hapticStyles = ['soft', 'light', 'medium', 'heavy', 'rigid'];
+    hapticStyles.forEach(style => {
+        document.getElementById(`haptic${style.charAt(0).toUpperCase() + style.slice(1)}`)?.addEventListener('click', () => {
+            if (window.WebApp?.HapticFeedback) {
+                window.WebApp.HapticFeedback.impactOccurred(style);
+                addToLog(`Haptic: ${style} вибрация`, 'info');
+                logToConsole(`Haptic impact: ${style}`, 'info');
+            }
+        });
+    });
+    
+    document.getElementById('hapticSuccess')?.addEventListener('click', () => {
+        if (window.WebApp?.HapticFeedback) {
+            window.WebApp.HapticFeedback.notificationOccurred('success');
+            addToLog('Haptic: уведомление об успехе', 'success');
+        }
+    });
+    
+    document.getElementById('hapticWarning')?.addEventListener('click', () => {
+        if (window.WebApp?.HapticFeedback) {
+            window.WebApp.HapticFeedback.notificationOccurred('warning');
+            addToLog('Haptic: предупреждение', 'warning');
+        }
+    });
+    
+    document.getElementById('hapticError')?.addEventListener('click', () => {
+        if (window.WebApp?.HapticFeedback) {
+            window.WebApp.HapticFeedback.notificationOccurred('error');
+            addToLog('Haptic: ошибка', 'error');
+        }
+    });
+    
+    document.getElementById('hapticSelection')?.addEventListener('click', () => {
+        if (window.WebApp?.HapticFeedback) {
+            window.WebApp.HapticFeedback.selectionChanged();
+            addToLog('Haptic: изменение выбора', 'info');
+        }
+    });
+    
+    // 5. Функции устройства
+    document.getElementById('requestPhoneBtn')?.addEventListener('click', async () => {
+        const phone = await callWebAppMethod('requestContact');
+        if (phone) {
+            addToLog(`Получен номер телефона: ${phone}`, 'success');
+        }
+    });
+    
+    document.getElementById('scanQrBtn')?.addEventListener('click', async () => {
+        const result = await callWebAppMethod('openCodeReader', true);
+        if (result) {
+            addToLog(`QR-код отсканирован: ${result}`, 'success');
+        }
+    });
+    
+    document.getElementById('downloadFileBtn')?.addEventListener('click', () => {
+        const url = document.getElementById('downloadUrl').value;
+        const fileName = document.getElementById('downloadName').value;
+        callWebAppMethod('downloadFile', url, fileName);
+    });
+    
+    // 6. Яркость экрана
+    document.getElementById('maxBrightnessBtn')?.addEventListener('click', () => {
+        callWebAppMethod('requestScreenMaxBrightness');
+    });
+    
+    document.getElementById('restoreBrightnessBtn')?.addEventListener('click', () => {
+        callWebAppMethod('restoreScreenBrightness');
+    });
+    
+    // 7. Защита экрана
+    document.getElementById('enableScreenCaptureBtn')?.addEventListener('click', async () => {
+        if (window.WebApp?.ScreenCapture) {
+            window.WebApp.ScreenCapture.enableScreenCapture();
+            const status = window.WebApp.ScreenCapture.isScreenCaptureEnabled;
+            document.getElementById('screenCaptureStatus').textContent = `Статус: ${status ? 'ЗАПРЕЩЕНО' : 'РАЗРЕШЕНО'}`;
+            addToLog(`Скриншоты/запись: ${status ? 'запрещены' : 'разрешены'}`, 'warning');
+        }
+    });
+    
+    document.getElementById('disableScreenCaptureBtn')?.addEventListener('click', async () => {
+        if (window.WebApp?.ScreenCapture) {
+            window.WebApp.ScreenCapture.disableScreenCapture();
+            const status = window.WebApp.ScreenCapture.isScreenCaptureEnabled;
+            document.getElementById('screenCaptureStatus').textContent = `Статус: ${status ? 'ЗАПРЕЩЕНО' : 'РАЗРЕШЕНО'}`;
+            addToLog(`Скриншоты/запись: ${status ? 'запрещены' : 'разрешены'}`, 'info');
+        }
+    });
+    
+    // 8. Подтверждение закрытия
+    document.getElementById('enableConfirmBtn')?.addEventListener('click', () => {
+        callWebAppMethod('enableClosingConfirmation');
+    });
+    
+    document.getElementById('disableConfirmBtn')?.addEventListener('click', () => {
+        callWebAppMethod('disableClosingConfirmation');
+    });
+    
+    // 9. DeviceStorage (только в приложении)
+    document.getElementById('storageSetBtn')?.addEventListener('click', async () => {
+        const key = document.getElementById('storageKey').value;
+        const value = document.getElementById('storageValue').value;
+        if (window.WebApp?.DeviceStorage) {
+            await window.WebApp.DeviceStorage.setItem(key, value);
+            document.getElementById('storageResult').textContent = `Сохранено: ${key} = ${value}`;
+            addToLog(`DeviceStorage: сохранено ${key}=${value}`, 'success');
+        } else {
+            addToLog('DeviceStorage недоступен (работает только в приложении MAX)', 'error');
+        }
+    });
+    
+    document.getElementById('storageGetBtn')?.addEventListener('click', async () => {
+        const key = document.getElementById('storageKey').value;
+        if (window.WebApp?.DeviceStorage) {
+            const value = await window.WebApp.DeviceStorage.getItem(key);
+            document.getElementById('storageResult').textContent = `Получено: ${key} = ${value || 'не найдено'}`;
+            addToLog(`DeviceStorage: получено ${key}=${value}`, 'info');
+        }
+    });
+    
+    document.getElementById('storageRemoveBtn')?.addEventListener('click', async () => {
+        const key = document.getElementById('storageKey').value;
+        if (window.WebApp?.DeviceStorage) {
+            await window.WebApp.DeviceStorage.removeItem(key);
+            document.getElementById('storageResult').textContent = `Удалено: ${key}`;
+            addToLog(`DeviceStorage: удалено ${key}`, 'warning');
+        }
+    });
+    
+    document.getElementById('storageClearBtn')?.addEventListener('click', async () => {
+        if (window.WebApp?.DeviceStorage) {
+            await window.WebApp.DeviceStorage.clear();
+            document.getElementById('storageResult').textContent = 'Хранилище очищено';
+            addToLog('DeviceStorage: всё хранилище очищено', 'warning');
+        }
+    });
+    
+    // 10. Очистка лога
+    document.getElementById('clearLogBtn')?.addEventListener('click', () => {
+        const logContainer = document.getElementById('logContainer');
+        logContainer.innerHTML = '<div class="log-entry">Лог очищен</div>';
+        addToLog('Лог очищен пользователем', 'info');
+        console.clear();
+        logToConsole('Консоль и лог очищены', 'warning');
+    });
+    
+    // Запуск инициализации
+    initBridge();
+    
+    // Дополнительная информация в консоли о доступных методах
+    if (window.WebApp) {
+        logToConsole('Доступные методы WebApp:', 'success');
+        console.log(Object.keys(window.WebApp));
     }
 });
-
-
-(function(){
-        // ---- состояние приложения ----
-        let counter = 0;                // текущее значение счетчика
-        let eventLog = [];              // массив для хранения последних сообщений (показываем только последнее)
-        
-        // DOM элементы
-        const counterDisplay = document.getElementById('counterDisplay');
-        const incrementBtn = document.getElementById('incrementBtn');
-        const decrementBtn = document.getElementById('decrementBtn');
-        const resetBtn = document.getElementById('resetBtn');
-        const greetBtn = document.getElementById('greetBtn');
-        const randomBtn = document.getElementById('randomBtn');
-        const clearMsgBtn = document.getElementById('clearMsgBtn');
-        const lastMessageSpan = document.getElementById('lastMessage');
-        const statusBadge = document.getElementById('statusBadge');
-
-        
-        // вспомогательная функция: обновить отображение счетчика и статус-бейдж
-        function updateCounterUI() {
-            counterDisplay.innerText = counter;
-            // динамический статус (для веселья)
-            if (counter === 0) {
-                statusBadge.innerText = '⚖️ Нейтрально';
-                statusBadge.style.background = '#e2eaf1';
-            } else if (counter > 0 && counter < 5) {
-                statusBadge.innerText = '📈 Растёт';
-                statusBadge.style.background = '#d4e6f1';
-            } else if (counter >= 5 && counter < 15) {
-                statusBadge.innerText = '🔥 Активный';
-                statusBadge.style.background = '#fdebd0';
-            } else if (counter >= 15) {
-                statusBadge.innerText = '🚀 Космос!';
-                statusBadge.style.background = '#f5cba7';
-            } else if (counter < 0 && counter > -5) {
-                statusBadge.innerText = '📉 Снижение';
-                statusBadge.style.background = '#fadbd8';
-            } else if (counter <= -5) {
-                statusBadge.innerText = '❄️ Минусовая зона';
-                statusBadge.style.background = '#d6eaf8';
-            } else {
-                statusBadge.innerText = 'Активно';
-                statusBadge.style.background = '#cae3f2';
-            }
-        }
-        
-        // показать сообщение в области последнего действия
-        function setMessage(text, isError = false) {
-            // можно добавить иконку или стиль в зависимости от типа, но для простоты
-            if (isError) {
-                lastMessageSpan.innerHTML = `⚠️ ${text}`;
-                lastMessageSpan.style.color = '#b33b2c';
-            } else {
-                lastMessageSpan.innerHTML = `✨ ${text}`;
-                lastMessageSpan.style.color = '#2c5a7a';
-            }
-            // через 3 секунды сбросить цвет (но не стирать текст полностью)
-            setTimeout(() => {
-                if (lastMessageSpan.innerHTML === `✨ ${text}` || lastMessageSpan.innerHTML === `⚠️ ${text}`) {
-                    // если за это время не изменилось, возвращаем легкий оттенок, но текст остаётся
-                    lastMessageSpan.style.color = '#2c5a7a';
-                }
-            }, 2500);
-        }
-        
-        // добавить событие в историю (для демо, но в интерфейсе просто показываем последнее сообщение)
-        // но сделаем доп. функцию которая логирует и обновляет сообщение
-        function addActionLog(actionName, detail) {
-            const timestamp = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
-            const logMsg = `[${timestamp}] ${actionName}: ${detail}`;
-            // сохраняем последние 5 для внутреннего лога, но в UI показываем только последнее
-            eventLog.unshift(logMsg);
-            if(eventLog.length > 10) eventLog.pop();
-            // отображаем последнее действие в панели
-            setMessage(`${actionName} → ${detail}`);
-        }
-        
-        // --- основные действия ---
-        function incrementCounter() {
-            counter++;
-            updateCounterUI();
-            addActionLog('Инкремент', `теперь ${counter}`);
-            // добавим тактильный отклик (вибрация если поддерживается - необязательно, но интересно)
-            if (navigator.vibrate) navigator.vibrate(10);
-        }
-        
-        function decrementCounter() {
-            counter--;
-            updateCounterUI();
-            addActionLog('Декремент', `теперь ${counter}`);
-            if (navigator.vibrate) navigator.vibrate(10);
-        }
-        
-        function resetCounter() {
-            const oldValue = counter;
-            counter = 0;
-            updateCounterUI();
-            addActionLog('Сброс', `было ${oldValue}, стало 0`);
-            if (navigator.vibrate) navigator.vibrate(20);
-        }
-        
-        function showGreeting() {
-            const hour = new Date().getHours();
-            let greeting = '';
-            if (hour < 12) greeting = 'Доброе утро ☀️';
-            else if (hour < 18) greeting = 'Добрый день 🌤️';
-            else greeting = 'Добрый вечер 🌙';
-            addActionLog('Приветствие', `${greeting}! Текущий счетчик = ${counter}`);
-        }
-        
-        function randomNumberAction() {
-            const rand = Math.floor(Math.random() * 100) + 1; // 1-100
-            addActionLog('Случайное число', `выпало ${rand} (счётчик был ${counter})`);
-            // дополнительный эффект: если пользователь хочет, можно предложить добавить это число? но не меняем логику счетчика
-            // просто тестовая фича
-        }
-        
-        function clearMessages() {
-            eventLog = [];
-            setMessage('Лог сообщений очищен 👍');
-            lastMessageSpan.style.color = '#2c5a7a';
-            // дополнительно меняем статус бейдж не трогаем
-        }
-        
-        // дополнительные тесты: быстрая проверка работы локального хранилища (имитация сохранения состояния)
-        // для интереса добавим авто-сохранение счётчика в localStorage при каждом изменении и загрузку при старте
-        function saveCounterToLocal() {
-            try {
-                localStorage.setItem('testMiniApp_counter', counter);
-            } catch(e) { /* тихо */ }
-        }
-        
-        function loadCounterFromLocal() {
-            try {
-                const saved = localStorage.getItem('testMiniApp_counter');
-                if(saved !== null && !isNaN(parseInt(saved))) {
-                    counter = parseInt(saved);
-                    updateCounterUI();
-                    setMessage(`Загружено сохранённое значение: ${counter}`, false);
-                } else {
-                    // начальное значение 0
-                    counter = 0;
-                    updateCounterUI();
-                }
-            } catch(e) {
-                counter = 0;
-                updateCounterUI();
-            }
-        }
-        
-        // обертка для сохранения после каждого изменения счётчика
-        function persistAndUpdate() {
-            updateCounterUI();
-            saveCounterToLocal();
-        }
-        
-        // переопределим методы изменения счетчика с сохранением
-        // подменим функции чтобы они вызывали сохранение
-        const originalIncrement = incrementCounter;
-        const originalDecrement = decrementCounter;
-        const originalReset = resetCounter;
-        
-        window.incrementCounter = function() {
-            originalIncrement();
-            saveCounterToLocal();
-        };
-        window.decrementCounter = function() {
-            originalDecrement();
-            saveCounterToLocal();
-        };
-        window.resetCounter = function() {
-            originalReset();
-            saveCounterToLocal();
-        };
-        
-        // переназначим, чтобы обработчики вызывали новые версии с сохранением
-        incrementBtn.onclick = () => {
-            originalIncrement();
-            saveCounterToLocal();
-        };
-        decrementBtn.onclick = () => {
-            originalDecrement();
-            saveCounterToLocal();
-        };
-        resetBtn.onclick = () => {
-            originalReset();
-            saveCounterToLocal();
-        };
-        greetBtn.onclick = () => showGreeting();
-        randomBtn.onclick = () => randomNumberAction();
-        clearMsgBtn.onclick = () => clearMessages();
-        
-        // добавим интересный эффект двойного нажатия? нет, но сделаем так, чтобы при изменении счетчика через UI было полное логирование
-        // загружаем данные из localStorage при старте
-        loadCounterFromLocal();
-        
-        // дополнительная инициализация сообщения
-        setMessage('Мини-приложение готово! 👾', false);
-        
-        // добавим проверку окружения: если внутри Telegram WebView или VK Mini Apps - можно оповещать, но для простоты выведем в консоль
-        console.log('[MiniAppTest] Приложение загружено, счетчик =', counter);
-        
-        // мини-фича: показываем подсказку при долгом нажатии на счетчик (сброс? но не будем)
-        const counterDiv = document.querySelector('.counter-section');
-        counterDiv.addEventListener('dblclick', () => {
-            setMessage('🔁 Двойной тап по счётчику — можно сбросить через кнопку', false);
-            if (navigator.vibrate) navigator.vibrate(30);
-        });
-        
-        // анимация кнопок для ощущения на мобильных (уже есть актив)
-        // добавим динамическое изменение заголовка документа при изменении счетчика (по желанию)
-        function updateTitleWithCounter() {
-            document.title = counter !== 0 ? `(${counter}) ТестМиниApp` : 'ТестМиниApp';
-        }
-        // следим за изменением счетчика через перехват обновления UI
-        const originalUpdateUI = updateCounterUI;
-        window.updateCounterUI = function() {
-            originalUpdateUI();
-            updateTitleWithCounter();
-        };
-        updateCounterUI = function() {
-            originalUpdateUI();
-            updateTitleWithCounter();
-        };
-        // вызываем для привязки
-        updateCounterUI();
-        // подменяем ссылки в функциях (небольшой хак для сохранения)
-        const boundUpdate = () => {
-            updateCounterUI();
-            saveCounterToLocal();
-        };
-        // перезапись глобальных функций для консистентности
-        window.incrementCounter = () => {
-            originalIncrement();
-            saveCounterToLocal();
-            updateTitleWithCounter();
-        };
-        window.decrementCounter = () => {
-            originalDecrement();
-            saveCounterToLocal();
-            updateTitleWithCounter();
-        };
-        window.resetCounter = () => {
-            originalReset();
-            saveCounterToLocal();
-            updateTitleWithCounter();
-        };
-        // принудительно синхронизируем обработчики
-        incrementBtn.onclick = () => { originalIncrement(); saveCounterToLocal(); updateTitleWithCounter(); };
-        decrementBtn.onclick = () => { originalDecrement(); saveCounterToLocal(); updateTitleWithCounter(); };
-        resetBtn.onclick = () => { originalReset(); saveCounterToLocal(); updateTitleWithCounter(); };
-        
-        // последний штрих: если кликнуть по статус-бейджу - покажет случайную шутку
-        statusBadge.style.cursor = 'pointer';
-        statusBadge.addEventListener('click', () => {
-            const jokes = [
-                '🐞 Багов не найдено!',
-                '🚀 Мини-аппа летает',
-                '💡 Счетчик — это классика',
-                '🎯 Ты крутой тестировщик',
-                '🍕 Пицца одобряет этот код'
-            ];
-            const randomJoke = jokes[Math.floor(Math.random() * jokes.length)];
-            setMessage(randomJoke, false);
-            if (navigator.vibrate) navigator.vibrate(15);
-        });
-        
-        // Добавим удобный хоткей: клавиши + / - / 0 для сброса
-        window.addEventListener('keydown', (e) => {
-            if (e.key === '+' || e.key === '=') {
-                e.preventDefault();
-                incrementBtn.click();
-            } else if (e.key === '-' || e.key === '_') {
-                e.preventDefault();
-                decrementBtn.click();
-            } else if (e.key === '0' || e.key === 'Delete') {
-                e.preventDefault();
-                resetBtn.click();
-            } else if (e.key === 'r' || e.key === 'R') {
-                e.preventDefault();
-                randomBtn.click();
-            } else if (e.key === 'g' || e.key === 'G') {
-                e.preventDefault();
-                greetBtn.click();
-            }
-        });
-        
-        // финальная синхронизация отображения
-        updateTitleWithCounter();
-    })();
