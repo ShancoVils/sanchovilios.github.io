@@ -13,6 +13,9 @@
         const clearMsgBtn = document.getElementById('clearMsgBtn');
         const lastMessageSpan = document.getElementById('lastMessage');
         const statusBadge = document.getElementById('statusBadge');
+
+        let miniapp = window.WebApp
+        console.log(miniapp.initData)
         
         // вспомогательная функция: обновить отображение счетчика и статус-бейдж
         function updateCounterUI() {
