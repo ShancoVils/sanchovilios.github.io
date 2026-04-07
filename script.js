@@ -335,6 +335,187 @@ document.addEventListener('DOMContentLoaded', () => {
         console.clear();
         logToConsole('Консоль и лог очищены', 'warning');
     });
+
+
+    async function updateBiometricStatus() {
+        const statusContainer = document.getElementById('biometricStatus');
+        if (!window.WebApp?.BiometricManager) {
+            statusContainer.innerHTML = `
+                <div class="info-item biometric-status-unavailable">
+                    ❌ BiometricManager недоступен (работает только в нативном приложении MAX)
+                </div>
+            `;
+            addToLog('BiometricManager: недоступен (не в нативном приложении MAX)', 'error');
+            return;
+        }
+        
+        const bm = window.WebApp.BiometricManager;
+        const statusHtml = `
+            <div class="info-item"><strong>🔧 Инициализирован:</strong> ${bm.isInited ? '✅ Да' : '❌ Нет'}</div>
+            <div class="info-item"><strong>📱 Биометрия доступна:</strong> ${bm.isBiometricAvailable ? '✅ Да' : '❌ Нет'}</div>
+            <div class="info-item"><strong>🆔 Тип биометрии:</strong> ${bm.biometricType ? bm.biometricType.join(', ') : 'N/A'}</div>
+            <div class="info-item"><strong>🔑 Доступ запрошен:</strong> ${bm.isAccessRequested ? '✅ Да' : '❌ Нет'}</div>
+            <div class="info-item"><strong>🔓 Доступ предоставлен:</strong> ${bm.isAccessGranted ? '✅ Да' : '❌ Нет'}</div>
+            <div class="info-item"><strong>💾 Токен сохранён:</strong> ${bm.isBiometricTokenSaved ? '✅ Да' : '❌ Нет'}</div>
+            <div class="info-item"><strong>📱 ID устройства:</strong> ${bm.deviceId || 'null'}</div>
+        `;
+        statusContainer.innerHTML = statusHtml;
+        
+        logToConsole('BiometricManager статус обновлён:', 'info');
+        console.log('BiometricManager полный объект:', {
+            isInited: bm.isInited,
+            isBiometricAvailable: bm.isBiometricAvailable,
+            biometricType: bm.biometricType,
+            isAccessRequested: bm.isAccessRequested,
+            isAccessGranted: bm.isAccessGranted,
+            isBiometricTokenSaved: bm.isBiometricTokenSaved,
+            deviceId: bm.deviceId
+        });
+    }
+    
+    // Инициализация биометрии
+    document.getElementById('biometricInitBtn')?.addEventListener('click', async () => {
+        if (!window.WebApp?.BiometricManager) {
+            const msg = 'BiometricManager недоступен. Работает только в нативном приложении MAX!';
+            addToLog(msg, 'error');
+            document.getElementById('biometricResult').innerHTML = `<span style="color: #dc3545;">❌ ${msg}</span>`;
+            return;
+        }
+        
+        try {
+            addToLog('BiometricManager: запуск инициализации...', 'info');
+            const result = await window.WebApp.BiometricManager.init();
+            logToConsole('BiometricManager.init() результат:', 'success');
+            console.log(result);
+            addToLog('BiometricManager: инициализация завершена', 'success');
+            await updateBiometricStatus();
+            document.getElementById('biometricResult').innerHTML = '<span style="color: #28a745;">✅ Биометрия инициализирована</span>';
+        } catch (error) {
+            const errorMsg = `Ошибка инициализации биометрии: ${error.message || error}`;
+            addToLog(errorMsg, 'error');
+            document.getElementById('biometricResult').innerHTML = `<span style="color: #dc3545;">❌ ${errorMsg}</span>`;
+        }
+    });
+    
+    // Аутентификация
+    document.getElementById('biometricAuthBtn')?.addEventListener('click', async () => {
+        if (!window.WebApp?.BiometricManager) {
+            addToLog('BiometricManager недоступен', 'error');
+            return;
+        }
+        
+        try {
+            addToLog('BiometricManager: запрос аутентификации...', 'info');
+            const result = await window.WebApp.BiometricManager.authenticate();
+            logToConsole('BiometricManager.authenticate() результат:', 'success');
+            console.log(result);
+            addToLog(`✅ Аутентификация успешна! Результат: ${JSON.stringify(result)}`, 'success');
+            document.getElementById('biometricResult').innerHTML = '<span style="color: #28a745;">✅ Аутентификация пройдена успешно!</span>';
+        } catch (error) {
+            const errorMsg = `Ошибка аутентификации: ${error.message || error}`;
+            addToLog(errorMsg, 'error');
+            document.getElementById('biometricResult').innerHTML = `<span style="color: #dc3545;">❌ ${errorMsg}</span>`;
+        }
+    });
+    
+    // Запрос доступа к биометрии
+    document.getElementById('biometricRequestAccessBtn')?.addEventListener('click', async () => {
+        if (!window.WebApp?.BiometricManager) {
+            addToLog('BiometricManager недоступен', 'error');
+            return;
+        }
+        
+        try {
+            addToLog('BiometricManager: запрос доступа к биометрии...', 'info');
+            const result = await window.WebApp.BiometricManager.requestAccess();
+            logToConsole('BiometricManager.requestAccess() результат:', 'success');
+            console.log(result);
+            addToLog(`Результат запроса доступа: ${JSON.stringify(result)}`, 'success');
+            await updateBiometricStatus();
+            document.getElementById('biometricResult').innerHTML = '<span style="color: #28a745;">✅ Доступ к биометрии запрошен</span>';
+        } catch (error) {
+            const errorMsg = `Ошибка запроса доступа: ${error.message || error}`;
+            addToLog(errorMsg, 'error');
+            document.getElementById('biometricResult').innerHTML = `<span style="color: #dc3545;">❌ ${errorMsg}</span>`;
+        }
+    });
+    
+    // Обновление биометрического токена
+    document.getElementById('biometricUpdateTokenBtn')?.addEventListener('click', async () => {
+        if (!window.WebApp?.BiometricManager) {
+            addToLog('BiometricManager недоступен', 'error');
+            return;
+        }
+        
+        const token = document.getElementById('biometricTokenValue').value;
+        
+        try {
+            addToLog(`BiometricManager: обновление токена...`, 'info');
+            const result = await window.WebApp.BiometricManager.updateBiometricToken(token);
+            logToConsole('BiometricManager.updateBiometricToken() результат:', 'success');
+            console.log(result);
+            if (token === '') {
+                addToLog('✅ Токен удалён из безопасного хранилища', 'success');
+                document.getElementById('biometricResult').innerHTML = '<span style="color: #28a745;">✅ Токен удалён</span>';
+            } else {
+                addToLog(`✅ Токен сохранён: ${token}`, 'success');
+                document.getElementById('biometricResult').innerHTML = `<span style="color: #28a745;">✅ Токен сохранён: ${token}</span>`;
+            }
+            await updateBiometricStatus();
+        } catch (error) {
+            const errorMsg = `Ошибка обновления токена: ${error.message || error}`;
+            addToLog(errorMsg, 'error');
+            document.getElementById('biometricResult').innerHTML = `<span style="color: #dc3545;">❌ ${errorMsg}</span>`;
+        }
+    });
+    
+    // Открыть настройки (закрывает приложение)
+    document.getElementById('biometricOpenSettingsBtn')?.addEventListener('click', async () => {
+        if (!window.WebApp?.BiometricManager) {
+            addToLog('BiometricManager недоступен', 'error');
+            return;
+        }
+        
+        addToLog('BiometricManager: открытие настроек... (приложение будет закрыто)', 'warning');
+        try {
+            await window.WebApp.BiometricManager.openSettings();
+            logToConsole('BiometricManager.openSettings() вызван', 'info');
+        } catch (error) {
+            const errorMsg = `Ошибка открытия настроек: ${error.message || error}`;
+            addToLog(errorMsg, 'error');
+            document.getElementById('biometricResult').innerHTML = `<span style="color: #dc3545;">❌ ${errorMsg}</span>`;
+        }
+    });
+    
+    // Автоматическая проверка статуса биометрии при загрузке
+    if (window.WebApp?.BiometricManager) {
+        setTimeout(async () => {
+            await updateBiometricStatus();
+            addToLog('BiometricManager: автоматическая проверка статуса выполнена', 'info');
+            
+            // Дополнительная информация о поддержке
+            logToConsole('Информация о биометрии:', 'info');
+            console.log('BiometricManager доступные методы:', Object.keys(window.WebApp.BiometricManager));
+            console.log('Тип биометрии:', window.WebApp.BiometricManager.biometricType);
+        }, 1000);
+    } else {
+        // Если BiometricManager не доступен, показываем информативное сообщение
+        const statusContainer = document.getElementById('biometricStatus');
+        if (statusContainer) {
+            statusContainer.innerHTML = `
+                <div class="info-item biometric-status-unavailable">
+                    ⚠️ BiometricManager недоступен<br>
+                    <small>• Работает ТОЛЬКО в нативном приложении MAX</small><br>
+                    <small>• Не поддерживается в веб-версии</small><br>
+                    <small>• Для Android biometricType = ["unknown"]</small>
+                </div>
+            `;
+        }
+    }
+
+
+
+
     
     // Запуск инициализации
     initBridge();
