@@ -102,6 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('User Data:', user);
         console.log('Full initDataUnsafe:', data);
         console.log('TEST');
+        
     }
     
     // Инициализация Bridge и обработчиков событий
