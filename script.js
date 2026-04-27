@@ -78,6 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
             addToLog('Данные пользователя не доступны', 'warning');
             return;
         }
+
         const data = window.WebApp.initDataUnsafe;
         const user = data.user || {};
         const chat = data.chat || {};
@@ -94,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="info-item"><strong>🔑 Query ID:</strong> ${data.query_id || 'N/A'}</div>
             <div class="info-item"><strong> InitData:</strong> ${window.WebApp || 'N/A'}</div>
             <div class="info-item"><strong> InitData:</strong> ${window.WebApp.initData || 'N/A'}</div>
-            <div class="json-view">${JSON.stringify(dadatata_save, null, 2)}</div>
+            <div class="json-view">${JSON.stringify(data, null, 2)}</div>
         `;
         document.getElementById('userInfo').innerHTML = infoHtml;
         addToLog('Информация о пользователе загружена', 'success');
