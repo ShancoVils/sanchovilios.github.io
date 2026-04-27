@@ -79,6 +79,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+
+        
         const data = window.WebApp.initDataUnsafe;
         const user = data.user || {};
         const chat = data.chat || {};
