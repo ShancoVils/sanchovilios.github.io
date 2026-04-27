@@ -83,6 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const user = data.user || {};
         const chat = data.chat || {};
         
+        
         const infoHtml = `
             <div class="info-item"><strong>🆔 User ID:</strong> ${user.id || 'N/A'}</div>
             <div class="info-item"><strong>👤 Имя:</strong> ${user.first_name || 'N/A'} ${user.last_name || ''}</div>
