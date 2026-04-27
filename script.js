@@ -93,7 +93,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="info-item"><strong>💬 Chat ID:</strong> ${chat.id || 'N/A'}</div>
             <div class="info-item"><strong>📝 Тип чата:</strong> ${chat.type || 'N/A'}</div>
             <div class="info-item"><strong>🔑 Query ID:</strong> ${data.query_id || 'N/A'}</div>
-            <div class="info-item"><strong>InitDataJson</strong> ${data.JSON || 'N/A'}</div>
+            <div class="info-item"><strong>📦 InitData (JSON):</strong></div>
+            <pre class="json-view">${escapeHtml(initDataJson)}</pre>
         `;
         document.getElementById('userInfo').innerHTML = infoHtml;
         addToLog('Информация о пользователе загружена', 'success');
