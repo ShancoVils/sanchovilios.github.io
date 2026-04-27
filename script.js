@@ -82,10 +82,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = window.WebApp.initDataUnsafe;
         const user = data.user || {};
         const chat = data.chat || {};
-        
-
-        
-
         const infoHtml = `
             <div class="info-item"><strong>🆔 User ID:</strong> ${user.id || 'N/A'}</div>
             <div class="info-item"><strong>👤 Имя:</strong> ${user.first_name || 'N/A'} ${user.last_name || ''}</div>
@@ -96,10 +92,31 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="info-item"><strong>💬 Chat ID:</strong> ${chat.id || 'N/A'}</div>
             <div class="info-item"><strong>📝 Тип чата:</strong> ${chat.type || 'N/A'}</div>
             <div class="info-item"><strong>🔑 Query ID:</strong> ${data.query_id || 'N/A'}</div>
-            <div class="info-item"><strong> InitData:</strong> ${window.WebApp || 'N/A'}</div>
-            <div class="info-item"><strong> InitData:</strong> ${window.WebApp.initData || 'N/A'}</div>
+            <div class="info-item">
+                <strong>🔐 InitData:</strong>
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 5px;">
+                    <input type="text" id="initDataInput" value="${(window.WebApp.initData || 'N/A').replace(/"/g, '&quot;')}" 
+                        readonly style="flex: 1; min-width: 150px; padding: 6px; font-size: 11px; 
+                        background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; font-family: monospace;">
+                    <button onclick="copyInitData()" style="padding: 6px 12px; cursor: pointer;">📋 Копировать</button>
+                </div>
+            </div>
             <div class="json-view">${JSON.stringify(data, null, 2)}</div>
         `;
+
+        // Добавьте эту функцию в ваш скрипт
+        window.copyInitData = function() {
+            const input = document.getElementById('initDataInput');
+            input.select();
+            input.setSelectionRange(0, 99999);
+            document.execCommand('copy');
+            
+            // Визуальный фидбек
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = '✓ Скопировано!';
+            setTimeout(() => btn.textContent = originalText, 2000);
+        };
         document.getElementById('userInfo').innerHTML = infoHtml;
         addToLog('Информация о пользователе загружена', 'success');
         logToConsole('Информация о пользователе:', 'info');
